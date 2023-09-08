@@ -3,10 +3,36 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+import { NFTStorage } from "nft.storage";
+
+import { CID } from "multiformats/cid";
+
+function convertCID(cidString: string) {
+  try {
+    const cid = CID.parse(cidString);
+
+    if (cid.version === 0) {
+      const v1 = cid.toV1().toString();
+      return { v0: cidString, v1 };
+    } else if (cid.version === 1) {
+      const v0 = CID.parse(cidString).toV0().toString();
+      return { v0, v1: cidString };
+    }
+  } catch (e) {
+    return undefined;
+  }
+}
 
 export default function HomePage() {
-  const [cid, setCID] = useState("");
+  const [cid, setCID] = useState(
+    "bafybeidd2gyhagleh47qeg77xqndy2qy3yzn4vkxmk775bg2t5lpuy7pcu"
+  );
+  const [convertedCIDs, setConvertedCIDs] = useState<{
+    v0: string;
+    v1: string;
+  }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<
     | "select"
@@ -16,7 +42,9 @@ export default function HomePage() {
     | "lighthouse-confirm"
     | "status"
   >("nftstorage");
-  const [nftStorageAPIKey, setNftStorageAPIKey] = useState("");
+  const [nftStorageAPIKey, setNftStorageAPIKey] = useState(
+    process.env.NEXT_PUBLIC_NFTSTORAGE_API_KEY || ""
+  );
   const [lighthouseAPIKey, setLighthouseAPIKey] = useState("");
   const [endDate, setEndDate] = useState(
     new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // 1 week from now
@@ -26,6 +54,11 @@ export default function HomePage() {
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [jobId, setJobId] = useState("");
+
+  useMemo(() => {
+    const converted = convertCID(cid);
+    setConvertedCIDs(converted);
+  }, [cid]);
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -136,10 +169,18 @@ export default function HomePage() {
                   Choose Storage Method
                 </h2>
                 <div className="mb-4">
-                  <label className="block text-black text-sm font-bold mb-2">
-                    CID
-                  </label>
-                  <p className="text-xs">{cid}</p>
+                  <div>
+                    <span className="block text-black text-sm font-bold mb-2">
+                      CID v0
+                    </span>
+                    <p className="text-xs mb-2">{convertedCIDs?.v0}</p>
+                  </div>
+                  <div>
+                    <span className="block text-black text-sm font-bold mb-2">
+                      CID v1
+                    </span>
+                    <p className="text-xs mb-2">{convertedCIDs?.v1}</p>
+                  </div>
                 </div>
                 <div className="sm:flex sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
                   <div className="flex-1 border p-4 rounded shadow-sm bg-gray-50">
@@ -180,10 +221,12 @@ export default function HomePage() {
                   NFTStorage Backup
                 </h2>
                 <div className="mb-4">
-                  <label className="block text-black text-sm font-bold mb-2">
-                    CID
-                  </label>
-                  <p className="text-xs">{cid}</p>
+                  <div>
+                    <span className="block text-black text-sm font-bold mb-2">
+                      CID v1
+                    </span>
+                    <p className="text-xs mb-2">{convertedCIDs?.v1}</p>
+                  </div>
                 </div>
                 <div className="mb-4">
                   <label className="block text-black text-sm font-bold mb-2">
@@ -200,8 +243,22 @@ export default function HomePage() {
                 <div className="flex items-center justify-end">
                   <button
                     disabled={!cid}
-                    onClick={() => {
-                      setModalMode("nftstorage-confirm");
+                    onClick={async () => {
+                      try {
+                        const client = new NFTStorage({
+                          token: nftStorageAPIKey,
+                        });
+                        const carPath = `https://ipfs.io/ipfs/${cid}?format=car`;
+                        const response = await fetch(carPath);
+                        if (!response.ok) {
+                          throw new Error("Failed to fetch the car data.");
+                        }
+                        const carBlob = await response.blob();
+                        await client.storeCar(carBlob);
+                        setModalMode("nftstorage-confirm");
+                      } catch (error) {
+                        console.error("Error storing the car data:", error);
+                      }
                     }}
                     className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
                   >
@@ -222,16 +279,18 @@ export default function HomePage() {
                     className="mx-auto h-400 w-auto mb-4 p-12 sm:p-24"
                   />
                   <p className="mb-2">Content backed up in NFTStorage.</p>
-                  <p>
-                    <a
-                      href="#"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-600"
-                    >
-                      Check it out
-                    </a>
-                  </p>
+                  {convertedCIDs && (
+                    <p>
+                      <a
+                        href={`https://${convertedCIDs.v1}.ipfs.nftstorage.link/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-600"
+                      >
+                        Check it out
+                      </a>
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -241,10 +300,12 @@ export default function HomePage() {
                   Lighthouse Backup
                 </h2>
                 <div className="mb-4">
-                  <label className="block text-black text-sm font-bold mb-2">
-                    CID
-                  </label>
-                  <p className="text-xs">{cid}</p>
+                  <div>
+                    <span className="block text-black text-sm font-bold mb-2">
+                      CID v0
+                    </span>
+                    <p className="text-xs mb-2">{convertedCIDs?.v0}</p>
+                  </div>
                 </div>
                 <div className="mb-4">
                   <label className="block text-black text-sm font-bold mb-2">
