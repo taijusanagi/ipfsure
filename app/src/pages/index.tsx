@@ -14,6 +14,7 @@ export default function HomePage() {
     | "nftstorage-confirm"
     | "lighthouse"
     | "lighthouse-confirm"
+    | "status"
   >("nftstorage");
   const [nftStorageAPIKey, setNftStorageAPIKey] = useState("");
   const [lighthouseAPIKey, setLighthouseAPIKey] = useState("");
@@ -24,6 +25,7 @@ export default function HomePage() {
   const [epochs, setEpochs] = useState(4);
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [jobId, setJobId] = useState("");
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -58,13 +60,13 @@ export default function HomePage() {
         </p>
       </div>
       <div className="flex-1 px-4 mb-12">
-        <div className="flex items-center justify-center">
-          <div className="bg-white py-6 px-4 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full">
+        <div className="flex flex-col items-center justify-center">
+          <div className="bg-white py-6 px-4 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full mb-4">
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Create Backup
+            </h2>
             <div>
-              <label
-                htmlFor="name"
-                className="block text-black text-sm font-bold mb-2"
-              >
+              <label className="block text-black text-sm font-bold mb-2">
                 Input CID
               </label>
               <input
@@ -80,6 +82,34 @@ export default function HomePage() {
                 disabled={!cid}
                 onClick={() => {
                   setModalMode("select");
+                  setIsModalOpen(true);
+                }}
+                className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+              >
+                Start
+              </button>
+            </div>
+          </div>
+          <div className="bg-white py-6 px-4 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full">
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Check Job Status
+            </h2>
+            <div>
+              <label className="block text-black text-sm font-bold mb-2">
+                Input Job ID
+              </label>
+              <input
+                type="text"
+                value={jobId}
+                onChange={(e) => setJobId(e.target.value)}
+                className="shadow appearance-none border rounded w-full p-3 text-black leading-tight focus:outline-none text-xs"
+              />
+            </div>
+            <div className="flex items-center justify-end">
+              <button
+                disabled={!jobId}
+                onClick={() => {
+                  setModalMode("status");
                   setIsModalOpen(true);
                 }}
                 className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
@@ -106,10 +136,7 @@ export default function HomePage() {
                   Choose Storage Method
                 </h2>
                 <div className="mb-4">
-                  <label
-                    htmlFor="name"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     CID
                   </label>
                   <p className="text-xs">{cid}</p>
@@ -153,19 +180,13 @@ export default function HomePage() {
                   NFTStorage Backup
                 </h2>
                 <div className="mb-4">
-                  <label
-                    htmlFor="name"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     CID
                   </label>
                   <p className="text-xs">{cid}</p>
                 </div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="name"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     Input NFTStorage API Key
                   </label>
                   <input
@@ -220,19 +241,13 @@ export default function HomePage() {
                   Lighthouse Backup
                 </h2>
                 <div className="mb-4">
-                  <label
-                    htmlFor="cid"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     CID
                   </label>
                   <p className="text-xs">{cid}</p>
                 </div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="lighthouse-api-key"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     Input Lighthouse API Key
                   </label>
                   <input
@@ -255,9 +270,7 @@ export default function HomePage() {
                       checked={selectedOptions.includes("replication")}
                       onChange={handleCheckboxChange}
                     />
-                    <label htmlFor="replication" className="ml-2">
-                      Replication
-                    </label>
+                    <label className="ml-2">Replication</label>
                   </div>
                   <div>
                     <input
@@ -266,9 +279,7 @@ export default function HomePage() {
                       checked={selectedOptions.includes("repair")}
                       onChange={handleCheckboxChange}
                     />
-                    <label htmlFor="repair" className="ml-2">
-                      Repair
-                    </label>
+                    <label className="ml-2">Repair</label>
                   </div>
                   <div>
                     <input
@@ -277,16 +288,11 @@ export default function HomePage() {
                       checked={selectedOptions.includes("renewal")}
                       onChange={handleCheckboxChange}
                     />
-                    <label htmlFor="renewal" className="ml-2">
-                      Renewal
-                    </label>
+                    <label className="ml-2">Renewal</label>
                   </div>
                 </div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="endDate"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     End Date:
                   </label>
                   <input
@@ -299,10 +305,7 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="replicationTarget"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     Replication Target:
                   </label>
                   <input
@@ -317,10 +320,7 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label
-                    htmlFor="epochs"
-                    className="block text-black text-sm font-bold mb-2"
-                  >
+                  <label className="block text-black text-sm font-bold mb-2">
                     Epochs:
                   </label>
                   <input
@@ -357,7 +357,7 @@ export default function HomePage() {
                     className="mx-auto h-400 w-auto mb-4 p-12 sm:p-24"
                   />
                   <p className="mb-2">Content backed up in Lighthouse.</p>
-                  <p>
+                  <p className="mb-4">
                     <a
                       href="#"
                       target="_blank"
@@ -366,6 +366,72 @@ export default function HomePage() {
                     >
                       Check it out
                     </a>
+                  </p>
+                  {selectedOptions.length > 0 && (
+                    <>
+                      <p className="mb-2">
+                        Job: {selectedOptions.map((v) => v).join(", ")} created.
+                      </p>
+                      <p>
+                        <a
+                          className="text-blue-500 hover:text-blue-600 cursor-pointer"
+                          onClick={() => {
+                            setModalMode("status");
+                          }}
+                        >
+                          Check it out
+                        </a>
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            {modalMode === "status" && (
+              <div>
+                <div className="text-center">
+                  <h2 className="text-lg font-bold mb-4">Job Status</h2>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-black text-sm font-bold mb-2">
+                    JobId
+                  </label>
+                  <p className="text-xs">{jobId}</p>
+                </div>
+                <div className="border p-4 my-2 rounded shadow-sm bg-gray-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold">Replication Job Status</h3>
+                    <span className="text-xs py-1 px-2 rounded bg-gray-200 text-gray-700">
+                      Processing
+                    </span>
+                  </div>
+                  <p className="mb-2 text-sm">
+                    Executing replication job to 2 replications.
+                  </p>
+                  <p className="text-sm">Currently replications at 0/2.</p>
+                </div>
+
+                <div className="border p-4 my-2 rounded shadow-sm bg-gray-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold">Renew Job Status</h3>
+                    <span className="text-xs py-1 px-2 rounded bg-green-200 text-green-700">
+                      No Issue
+                    </span>
+                  </div>
+                  <p className="text-sm">
+                    Executing renewal job every {epochs} epochs.
+                  </p>
+                </div>
+
+                <div className="border p-4 my-2 rounded shadow-sm bg-gray-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold">Repair Job Status</h3>
+                    <span className="text-xs py-1 px-2 rounded bg-green-200 text-green-700">
+                      No Issue
+                    </span>
+                  </div>
+                  <p className="text-sm">
+                    Executing repair job every {epochs} epochs.
                   </p>
                 </div>
               </div>
