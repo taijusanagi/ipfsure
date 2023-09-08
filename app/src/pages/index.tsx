@@ -3,11 +3,15 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 import Head from "next/head";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+
+import { FaSpinner } from "react-icons/fa";
 
 import { NFTStorage } from "nft.storage";
-
 import { CID } from "multiformats/cid";
+
+import { useToast } from "@/hooks/useToast";
+import { useDebug } from "@/hooks/useDebug";
 
 function convertCID(cidString: string) {
   try {
@@ -55,6 +59,9 @@ export default function HomePage() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [jobId, setJobId] = useState("");
 
+  const { debug, logTitle, isDebugStarted, logs } = useDebug();
+  const { toast, showToast } = useToast();
+
   useMemo(() => {
     const converted = convertCID(cid);
     setConvertedCIDs(converted);
@@ -73,6 +80,17 @@ export default function HomePage() {
       }
     });
   };
+
+  useEffect(() => {
+    if (isDebugStarted || isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto"; // or 'visible' if you want
+    }
+    return () => {
+      document.body.style.overflow = "auto"; // reset on unmount
+    };
+  }, [isDebugStarted, isModalOpen]);
 
   return (
     <div
@@ -112,7 +130,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center justify-end">
               <button
-                disabled={!cid}
+                disabled={!convertedCIDs}
                 onClick={() => {
                   setModalMode("select");
                   setIsModalOpen(true);
@@ -245,19 +263,31 @@ export default function HomePage() {
                     disabled={!cid}
                     onClick={async () => {
                       try {
+                        debug.start("NFTStorage Buckup");
                         const client = new NFTStorage({
                           token: nftStorageAPIKey,
                         });
                         const carPath = `https://ipfs.io/ipfs/${cid}?format=car`;
+                        debug.log("carPath", carPath);
                         const response = await fetch(carPath);
                         if (!response.ok) {
                           throw new Error("Failed to fetch the car data.");
                         }
+                        debug.log("car data fetched");
                         const carBlob = await response.blob();
+                        debug.log("start storing car data in NFTStorage");
                         await client.storeCar(carBlob);
+                        debug.log("done!!");
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 1000)
+                        );
                         setModalMode("nftstorage-confirm");
-                      } catch (error) {
-                        console.error("Error storing the car data:", error);
+                      } catch (error: any) {
+                        showToast({
+                          message: "Failed NFTStorage Buckup: " + error.message,
+                        });
+                      } finally {
+                        debug.end();
                       }
                     }}
                     className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
@@ -505,6 +535,35 @@ export default function HomePage() {
           © 2023 IPFSure. All rights reserved.
         </p>
       </footer>
+      {isDebugStarted && (
+        <div className="fixed top-0 left-0 w-full h-screen bg-black bg-opacity-50 flex flex-col items-center justify-center z-50 p-2">
+          <div className="max-w-xl w-full bg-black p-4 rounded-lg shadow-2xl break-all">
+            <div className="flex justify-between items-center text-white text-sm align-left mb-2">
+              {logTitle ? `Logs for ${logTitle}` : "Logs"}{" "}
+              <FaSpinner className="text-white text-sm animate-spin" />
+            </div>
+            {logs.map((log, i) => {
+              return (
+                <p
+                  key={`log_${i}`}
+                  className="text-green-600 text-xs align-left"
+                >
+                  {`>> ${log}`}
+                </p>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 w-80 bg-red-400 text-white p-4 rounded-lg shadow-2xl z-50 text-xs break-all z-100`}
+        >
+          {toast.message.length > 200
+            ? toast.message.substring(0, 200)
+            : toast.message}
+        </div>
+      )}
     </div>
   );
 }
