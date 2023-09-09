@@ -39,8 +39,8 @@ export default function HomePage() {
   }>();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [viewMode, setViewlMode] = useState<
-    "select" | "check" | "backup" | "job"
+  const [viewMode, setViewMode] = useState<
+    "select" | "check" | "backup" | "monitor"
   >("select");
 
   const [modalMode, setModalMode] = useState<
@@ -245,7 +245,10 @@ export default function HomePage() {
         <title>IPFSure</title>
       </Head>
       <header className="py-4 px-4 flex justify-end items-center mb-12 sm:mb-24">
-        <button className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75">
+        <button
+          disabled={true}
+          className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+        >
           Connect Wallet
         </button>
       </header>
@@ -257,63 +260,116 @@ export default function HomePage() {
       </div>
       <div className="flex-1 px-4 mb-12">
         <div className="flex flex-col items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full mb-4">
-            <h2 className="text-lg font-bold mb-4 text-center">
-              Create Backup
-            </h2>
-            <div>
-              <label className="block text-black text-sm font-bold mb-2">
-                Input CID
-              </label>
-              <input
-                type="text"
-                placeholder="Qm..."
-                value={cid}
-                onChange={(e) => setCID(e.target.value)}
-                className="shadow appearance-none border rounded w-full p-3 text-black leading-tight focus:outline-none text-xs"
-              />
-            </div>
-            <div className="flex items-center justify-end">
+          {viewMode !== "select" && (
+            <div className="absolute top-4 left-4">
               <button
-                disabled={!convertedCIDs}
-                onClick={() => {
-                  setModalMode("select");
-                  setIsModalOpen(true);
-                }}
-                className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+                onClick={() => setViewMode("select")}
+                className="bg-white p-2 rounded text-gray-600 hover:bg-gray-200 focus:outline-none transition-colors duration-150"
               >
-                Start
+                Home
               </button>
             </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full">
-            <h2 className="text-lg font-bold mb-4 text-center">
-              Check Job Status
-            </h2>
-            <div>
-              <label className="block text-black text-sm font-bold mb-2">
-                Input Job ID
-              </label>
-              <input
-                type="text"
-                value={jobId}
-                onChange={(e) => setJobId(e.target.value)}
-                className="shadow appearance-none border rounded w-full p-3 text-black leading-tight focus:outline-none text-xs"
-              />
-            </div>
-            <div className="flex items-center justify-end">
-              <button
-                disabled={!jobId}
-                onClick={() => {
-                  setModalMode("job");
-                  setIsModalOpen(true);
-                }}
-                className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+          )}
+          {viewMode === "select" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                onClick={() => setViewMode("check")}
+                className="bg-white p-6 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-200 w-80 cursor-pointer"
               >
-                Start
-              </button>
+                <h2 className="text-lg font-bold text-center text-gray-700">
+                  Check Mode
+                </h2>
+                <p className="text-center text-gray-600 mt-2">
+                  You can check the the scalability and resilience of your data
+                  here.
+                </p>
+              </div>
+              <div
+                onClick={() => setViewMode("backup")}
+                className="bg-white p-6 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-200 w-80 cursor-pointer"
+              >
+                <h2 className="text-lg font-bold text-center text-gray-700">
+                  Backup Mode
+                </h2>
+                <p className="text-center text-gray-600 mt-2">
+                  You can backup your content with NFTStorage or Lighthouse.
+                </p>
+              </div>
+              <div
+                onClick={() => setViewMode("monitor")}
+                className="bg-white p-6 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-200 w-80 cursor-pointer"
+              >
+                <h2 className="text-lg font-bold text-center text-gray-700">
+                  Monitoring Mode
+                </h2>
+                <p className="text-center text-gray-600 mt-2">
+                  You can check advanced replication, repair, renewal status
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+          {viewMode === "check" && <></>}
+          {viewMode === "backup" && (
+            <div className="bg-white p-6 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full mb-4">
+              <h2 className="text-lg font-bold mb-4 text-center">
+                Create Backup
+              </h2>
+              <div>
+                <label className="block text-black text-sm font-bold mb-2">
+                  Input CID
+                </label>
+                <input
+                  type="text"
+                  placeholder="Qm..."
+                  value={cid}
+                  onChange={(e) => setCID(e.target.value)}
+                  className="shadow appearance-none border rounded w-full p-3 text-black leading-tight focus:outline-none text-xs"
+                />
+              </div>
+              <div className="flex items-center justify-end">
+                <button
+                  disabled={!convertedCIDs}
+                  onClick={() => {
+                    setModalMode("select");
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+                >
+                  Start
+                </button>
+              </div>
+            </div>
+          )}
+          {viewMode === "monitor" && (
+            <div className="bg-white p-6 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full">
+              <h2 className="text-lg font-bold mb-4 text-center">
+                Check Job Status
+              </h2>
+              <div>
+                <label className="block text-black text-sm font-bold mb-2">
+                  Input Job ID
+                </label>
+                <input
+                  type="text"
+                  value={jobId}
+                  onChange={(e) => setJobId(e.target.value)}
+                  className="shadow appearance-none border rounded w-full p-3 text-black leading-tight focus:outline-none text-xs"
+                />
+              </div>
+              <div className="flex items-center justify-end">
+                <button
+                  disabled={!jobId}
+                  onClick={() => {
+                    setModalMode("job");
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+                >
+                  Start
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       {isModalOpen && (
