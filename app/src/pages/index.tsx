@@ -303,7 +303,7 @@ export default function HomePage() {
       <div className="text-center px-4 mb-12 sm:mb-24">
         <h1 className="text-3xl sm:text-4xl text-white mb-4">IPFSure 🙆‍♂️</h1>
         <p className="text-lg sm:text-2xl text-gray-300">
-          Ensure IPFS data integrity with replication, repair, and renewal
+          Ensure IPFS data integrity with check, backup, and monitoring
         </p>
       </div>
       <div className="flex-1 px-4 mb-12">
