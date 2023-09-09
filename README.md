@@ -33,7 +33,7 @@ For the FVM smart contract and backend development, we used the [RAAS Starter Ki
 
 ![diagram](./docs/diagram.png)
 
-## Technical Challenge
+## Technical Challenge and Achievement
 
 During HackFVM held in November 2022, I had an initial experience with FVM. You can find my previous work with FVM at the event [here](https://ethglobal.com/showcase/podp-proof-of-data-preservation-57v6u).
 
