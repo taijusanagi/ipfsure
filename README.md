@@ -4,6 +4,18 @@ Ensure IPFS data integrity with check, backup, and monitoring.
 
 ![screen](./docs/screen-1.png)
 
+## Live App
+
+https://ipfsure.vercel.app/
+
+## Pitch Deck
+
+Coming soon!
+
+## Demo Video
+
+Coming soon!
+
 ## Problem
 
 Currently, IPFS data requires more storage providers to support the data. However, its visibility remains limited for the majority of users.
