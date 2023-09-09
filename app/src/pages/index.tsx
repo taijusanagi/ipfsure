@@ -44,6 +44,7 @@ export default function HomePage() {
   >("select");
 
   const [modalMode, setModalMode] = useState<
+    | "check"
     | "select"
     | "nftstorage"
     | "nftstorage-confirm"
@@ -72,6 +73,53 @@ export default function HomePage() {
 
   const { debug, logTitle, isDebugStarted, logs } = useDebug();
   const { toast, showToast } = useToast();
+
+  const [peerInfo, setPeerInfo] = useState<OutputData>();
+
+  function modifyData(data: InputData): OutputData {
+    const { MultihashResults } = data;
+    let modifiedProviders: ModifiedProvider[] = [];
+
+    MultihashResults.forEach((result) => {
+      result.ProviderResults.forEach((providerResult) => {
+        modifiedProviders.push({
+          peerID: providerResult.Provider.ID,
+          Multiaddress: providerResult.Provider.Addrs,
+        });
+      });
+    });
+
+    // Removing duplicates based on peerID
+    modifiedProviders = modifiedProviders.reduce<ModifiedProvider[]>(
+      (acc, current) => {
+        const exists = acc.find((item) => item.peerID === current.peerID);
+        if (!exists) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      },
+      []
+    );
+
+    return { modifiedProviders };
+  }
+
+  useMemo(() => {
+    if (!convertedCIDs) {
+      return;
+    }
+    fetch(`https://cid.contact/cid/${convertedCIDs.v1}`).then((response) => {
+      response
+        .json()
+        .then((data) => {
+          setPeerInfo(modifyData(data));
+        })
+        .catch((error) => {
+          console.log("Error:", error.message);
+        });
+    });
+  }, [convertedCIDs]);
 
   useMemo(() => {
     const converted = convertCID(cid);
@@ -277,7 +325,7 @@ export default function HomePage() {
                 className="bg-white p-6 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-200 w-80 cursor-pointer"
               >
                 <h2 className="text-lg font-bold text-center text-gray-700">
-                  Check Mode
+                  Check
                 </h2>
                 <p className="text-center text-gray-600 mt-2">
                   You can check the the scalability and resilience of your data
@@ -289,7 +337,7 @@ export default function HomePage() {
                 className="bg-white p-6 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-200 w-80 cursor-pointer"
               >
                 <h2 className="text-lg font-bold text-center text-gray-700">
-                  Backup Mode
+                  Backup
                 </h2>
                 <p className="text-center text-gray-600 mt-2">
                   You can backup your content with NFTStorage or Lighthouse.
@@ -300,7 +348,7 @@ export default function HomePage() {
                 className="bg-white p-6 rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-200 w-80 cursor-pointer"
               >
                 <h2 className="text-lg font-bold text-center text-gray-700">
-                  Monitoring Mode
+                  Monitoring
                 </h2>
                 <p className="text-center text-gray-600 mt-2">
                   You can check advanced replication, repair, renewal status
@@ -308,7 +356,37 @@ export default function HomePage() {
               </div>
             </div>
           )}
-          {viewMode === "check" && <></>}
+          {viewMode === "check" && (
+            <div className="bg-white p-6 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full mb-4">
+              <h2 className="text-lg font-bold mb-4 text-center">
+                Check CID Peers
+              </h2>
+              <div>
+                <label className="block text-black text-sm font-bold mb-2">
+                  Input CID
+                </label>
+                <input
+                  type="text"
+                  placeholder="Qm..."
+                  value={cid}
+                  onChange={(e) => setCID(e.target.value)}
+                  className="shadow appearance-none border rounded w-full p-3 text-black leading-tight focus:outline-none text-xs"
+                />
+              </div>
+              <div className="flex items-center justify-end">
+                <button
+                  disabled={!convertedCIDs}
+                  onClick={() => {
+                    setModalMode("check");
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+                >
+                  Start
+                </button>
+              </div>
+            </div>
+          )}
           {viewMode === "backup" && (
             <div className="bg-white p-6 rounded-lg shadow-xl w-96 space-y-4 max-w-xl w-full mb-4">
               <h2 className="text-lg font-bold mb-4 text-center">
@@ -382,6 +460,58 @@ export default function HomePage() {
             >
               ×
             </button>
+            {modalMode === "check" && (
+              <div>
+                <h2 className="text-lg font-bold mb-4 text-center">
+                  CID Peers
+                </h2>
+                <div className="mb-4">
+                  <div>
+                    <span className="block text-black text-sm font-bold mb-2">
+                      CID v0
+                    </span>
+                    <p className="text-xs mb-2">{convertedCIDs?.v0}</p>
+                  </div>
+                  <div>
+                    <span className="block text-black text-sm font-bold mb-2">
+                      CID v1
+                    </span>
+                    <p className="text-xs mb-2">{convertedCIDs?.v1}</p>
+                  </div>
+                </div>
+                {peerInfo && (
+                  <div className="h-96 overflow-y-auto mb-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      {peerInfo.modifiedProviders.map((result, index) => (
+                        <div
+                          key={index}
+                          className="border p-4 rounded shadow-sm bg-gray-50"
+                        >
+                          <p className="text-xs mb-2">
+                            <strong>Peer ID:</strong> {result.peerID}
+                          </p>
+                          <p className="text-xs">
+                            <strong>Multiaddress:</strong> {result.Multiaddress}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-end">
+                  <button
+                    disabled={!convertedCIDs}
+                    onClick={() => {
+                      setModalMode("select");
+                      setIsModalOpen(true);
+                    }}
+                    className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
+                  >
+                    Backup
+                  </button>
+                </div>
+              </div>
+            )}
             {modalMode === "select" && (
               <div>
                 <h2 className="text-lg font-bold mb-4 text-center">
@@ -461,14 +591,18 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center justify-end">
                   <button
-                    disabled={!cid}
+                    disabled={!convertedCIDs}
                     onClick={async () => {
+                      if (!convertedCIDs) {
+                        return;
+                      }
                       try {
                         debug.start("NFTStorage Buckup");
+                        debug.log("cid", convertedCIDs.v1);
                         const client = new NFTStorage({
                           token: nftStorageAPIKey,
                         });
-                        const carPath = `https://ipfs.io/ipfs/${cid}?format=car`;
+                        const carPath = `https://ipfs.io/ipfs/${convertedCIDs.v1}?format=car`;
                         debug.log("carPath", carPath);
                         const response = await fetch(carPath);
                         if (!response.ok) {
@@ -631,6 +765,8 @@ export default function HomePage() {
                       if (!convertedCIDs) {
                         throw new Error("Invalid CID");
                       }
+                      debug.start("Lighthouse Backup");
+                      debug.log("cid", convertedCIDs.v0);
                       let jobType;
                       switch (selectedOptions.length) {
                         case 1:
@@ -658,6 +794,7 @@ export default function HomePage() {
                         replicationTarget.toString()
                       );
                       formData.append("epochs", epochs.toString());
+                      debug.start("register job");
                       try {
                         const response = await fetch(
                           process.env.NEXT_PUBLIC_SERVICE_URL +
@@ -679,13 +816,17 @@ export default function HomePage() {
                           }
                           return;
                         }
+                        debug.start("done!!");
                         setModalMode("lighthouse-confirm");
                         setJobId(convertedCIDs.v0);
                       } catch (error) {
                         console.log(error);
                         showToast({
-                          message: "Network error. Please try again.",
+                          message:
+                            "Network error. Please try again. You must run background service at your local for demo",
                         });
+                      } finally {
+                        debug.end();
                       }
                     }}
                     className="bg-gradient-to-br from-gray-700 to-black text-white py-2 px-4 rounded hover:opacity-80 focus:outline-none transition-opacity disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:opacity-75"
