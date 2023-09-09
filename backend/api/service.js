@@ -23,6 +23,9 @@ let edgeAggregatorInstance
 let lighthouseAggregatorInstance
 let isDealCreationListenerActive = false
 
+const cors = require("cors")
+app.use(cors())
+
 app.listen(port, () => {
     if (!isDealCreationListenerActive) {
         isDealCreationListenerActive = true
@@ -60,6 +63,17 @@ app.post("/api/register_job", upload.none(), async (req, res) => {
         replicationTarget: req.body.replicationTarget || 2,
         aggregator: req.body.aggregator || "lighthouse",
         epochs: req.body.epochs || 4,
+    }
+
+    console.log("Received job registration request: ", newJob)
+
+    // Combine file upload in registering process
+    try {
+        await lighthouseAggregatorInstance.downloadFile(newJob.cid)
+    } catch (e) {
+        return res.status(400).json({
+            error: "Save file in lighthouse first",
+        })
     }
 
     if (newJob.cid != null && newJob.cid != "") {
@@ -276,6 +290,8 @@ async function executeRepairJob(job) {
         const currentBlockHeight = await getBlockNumber()
 
         if (
+            response.data &&
+            response.data.result &&
             response.data.result.State.SectorStartEpoch > -1 &&
             response.data.result.State.SlashEpoch != -1 &&
             currentBlockHeight - response.data.result.State.SlashEpoch > job.epochs
