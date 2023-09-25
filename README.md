@@ -10,7 +10,7 @@ https://ipfsure.vercel.app/
 
 ## Pitch Deck
 
-Coming soon!
+https://docs.google.com/presentation/d/1UactJgDTsb48_NLEdQOD6AwHvCeVubiVnPGvoWrskOQ/edit?usp=sharing
 
 ## Demo Video
 
@@ -18,7 +18,7 @@ Coming soon!
 
 ## Problem
 
-Currently, IPFS data requires more storage providers to support the data. However, its visibility remains limited for the majority of users.
+Currently, IPFS data requires more storage providers to support the data persistence. However, its visibility remains limited for the majority of users.
 
 ## Solution
 
