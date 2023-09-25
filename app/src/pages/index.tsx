@@ -31,7 +31,7 @@ function convertCID(cidString: string) {
 
 export default function HomePage() {
   const [cid, setCID] = useState(
-    "bafybeidd2gyhagleh47qeg77xqndy2qy3yzn4vkxmk775bg2t5lpuy7pcu"
+    "bafybeidd2gyhagleh47qeg77xqndy2qy3yzn4vkxmk775bg2t5lpuy7pcu",
   );
   const [convertedCIDs, setConvertedCIDs] = useState<{
     v0: string;
@@ -53,13 +53,13 @@ export default function HomePage() {
     | "job"
   >("nftstorage");
   const [nftStorageAPIKey, setNftStorageAPIKey] = useState(
-    process.env.NEXT_PUBLIC_NFTSTORAGE_API_KEY || ""
+    process.env.NEXT_PUBLIC_NFTSTORAGE_API_KEY || "",
   );
   const [lighthouseAPIKey, setLighthouseAPIKey] = useState(
-    process.env.NEXT_PUBLIC_LIGHTHOUSE_API_KEY || ""
+    process.env.NEXT_PUBLIC_LIGHTHOUSE_API_KEY || "",
   );
   const [endDate, setEndDate] = useState(
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // 1 week from now
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0], // 1 week from now
   );
   const [replicationTarget, setReplicationTarget] = useState(1);
   const [epochs, setEpochs] = useState(16);
@@ -99,7 +99,7 @@ export default function HomePage() {
           return acc;
         }
       },
-      []
+      [],
     );
 
     return { modifiedProviders };
@@ -164,7 +164,7 @@ export default function HomePage() {
         process.env.NEXT_PUBLIC_SERVICE_URL +
           "/api/deal_status" +
           "?cid=" +
-          jobId
+          jobId,
       ).then((response) => {
         if (response.ok) {
           response.json().then((data) => {
@@ -614,7 +614,7 @@ export default function HomePage() {
                         await client.storeCar(carBlob);
                         debug.log("done!!");
                         await new Promise((resolve) =>
-                          setTimeout(resolve, 1000)
+                          setTimeout(resolve, 1000),
                         );
                         setModalMode("nftstorage-confirm");
                       } catch (error: any) {
@@ -791,7 +791,7 @@ export default function HomePage() {
                       formData.append("aggregator", "lighthouse");
                       formData.append(
                         "replicationTarget",
-                        replicationTarget.toString()
+                        replicationTarget.toString(),
                       );
                       formData.append("epochs", epochs.toString());
                       debug.start("register job");
@@ -802,7 +802,7 @@ export default function HomePage() {
                           {
                             method: "POST",
                             body: formData,
-                          }
+                          },
                         );
                         if (!response.ok) {
                           const responseData = await response.json();
