@@ -14,7 +14,7 @@ https://docs.google.com/presentation/d/1UactJgDTsb48_NLEdQOD6AwHvCeVubiVnPGvoWrs
 
 ## Demo Video
 
-Coming soon!
+https://youtu.be/ClDOKL3CUfU
 
 ## Problem
 
